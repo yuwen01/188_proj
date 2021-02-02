@@ -115,7 +115,6 @@ def depthFirstSearch(problem):
     "*** YOUR CODE HERE ***"
     frontier = util.Stack()
     frontier.push(problem.getStartState())
-    path_to_node = [problem.getStartState()]
     parents = {}
     expanded = []
     while not frontier.isEmpty():
@@ -126,24 +125,41 @@ def depthFirstSearch(problem):
                 result.append(parents[node][1])
                 node = parents[node][0]
             result.reverse()
-            print(result)
             return result
-
-        print (node)
         if node not in expanded:
             expanded.append(node)
-            path_to_node.append(node)
             for child, action, cost in problem.expand(node):
                 if child not in expanded:
                     parents[child] = (node, action)
                     frontier.push(child)
 
-    return failed
+    return []
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    frontier = util.Queue()
+    frontier.push(problem.getStartState())
+    parents = {}
+    expanded = []
+    while not frontier.isEmpty():
+        node = frontier.pop()
+        #print(node)
+        if problem.isGoalState(node):
+            result = []
+            while not node == problem.getStartState():
+                result.append(parents[node][1])
+                node = parents[node][0]
+            result.reverse()
+            return result
+
+        if node not in expanded:
+            expanded.append(node)
+            for child, action, cost in problem.expand(node):
+                if child not in expanded and child not in parents.keys():
+                    parents[child] = (node, action)
+                frontier.push(child)
+    return []
 
 def nullHeuristic(state, problem=None):
     """
