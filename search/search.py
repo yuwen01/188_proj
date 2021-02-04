@@ -190,14 +190,11 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 
         expanded.append(node)
         for child, action, cost in problem.expand(node):
-            # d(current,neighbor) is the weight of the edge from current to neighbor
-            # tentative_gScore is the distance from start to the neighbor through current
             tmp_cost = pathCost.get(node, float('inf')) + cost
             if tmp_cost < pathCost.get(child, float('inf')):
-                # This path to neighbor is better than any previous one. Record it!
                 parents[child] = (node, action)
                 pathCost[child] = tmp_cost
-                frontier.push(child, h(child))
+                frontier.push(child, tmp_cost + h(child))
     return []
 
 
