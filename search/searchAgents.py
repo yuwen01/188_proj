@@ -307,22 +307,26 @@ class CornersProblem(search.SearchProblem):
         self._expanded = 0 # DO NOT CHANGE; Number of search nodes expanded
         # Please add any code here which you would like to use
         # in initializing the problem
-        "*** YOUR CODE HERE ***"
-
+        self.startState = [self.startingPosition]
+        for corner in self.corners:
+            self.startState.append(self.startingPosition == corner)
+            
+        self.startState = tuple(self.startState)
+            
     def getStartState(self):
         """
         Returns the start state (in your state space, not the full Pacman state
         space)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.startState
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return all(state[1:])
 
     def expand(self, state):
         """
@@ -339,7 +343,9 @@ class CornersProblem(search.SearchProblem):
         for action in self.getActions(state):
             # Add a child state to the child list if the action is legal
             # You should call getActions, getActionCost, and getNextState.
-            "*** YOUR CODE HERE ***"
+            nextState = self.getNextState(state, action)
+            cost = self.getActionCost(state, action, nextState)
+            children.append((nextState, action, cost))
 
         self._expanded += 1 # DO NOT CHANGE
         return children
@@ -366,10 +372,15 @@ class CornersProblem(search.SearchProblem):
         x, y = state[0]
         dx, dy = Actions.directionToVector(action)
         nextx, nexty = int(x + dx), int(y + dy)
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        next_state = [(nextx, nexty)]
+        for i in range(4):
+            cx, cy = self.corners[i]
+            # print(state)
+            next_state.append((nextx == cx and nexty == cy) or state[i + 1])
+           #if nextx == cx and nexty 
         # you will need to replace the None part of the following tuple.
-        return ((nextx, nexty), None)
+        return tuple(next_state)
 
     def getCostOfActionSequence(self, actions):
         """
