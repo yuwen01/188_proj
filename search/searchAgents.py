@@ -307,7 +307,11 @@ class CornersProblem(search.SearchProblem):
         self._expanded = 0 # DO NOT CHANGE; Number of search nodes expanded
         # Please add any code here which you would like to use
         # in initializing the problem
-        "*** YOUR CODE HERE ***"
+        self.startState = [self.startingPosition]
+        for corner in self.corners:
+            self.startState.append(self.startingPosition == corner)
+
+        self.startState = tuple(self.startState)
 
     def getStartState(self):
         """
@@ -315,14 +319,14 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.startState
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return all(state[1:])
 
     def expand(self, state):
         """
@@ -339,7 +343,9 @@ class CornersProblem(search.SearchProblem):
         for action in self.getActions(state):
             # Add a child state to the child list if the action is legal
             # You should call getActions, getActionCost, and getNextState.
-            "*** YOUR CODE HERE ***"
+            nextState = self.getNextState(state, action)
+            cost = self.getActionCost(state, action, nextState)
+            children.append((nextState, action, cost))
 
         self._expanded += 1 # DO NOT CHANGE
         return children
@@ -366,10 +372,15 @@ class CornersProblem(search.SearchProblem):
         x, y = state[0]
         dx, dy = Actions.directionToVector(action)
         nextx, nexty = int(x + dx), int(y + dy)
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        next_state = [(nextx, nexty)]
+        for i in range(4):
+            cx, cy = self.corners[i]
+            # print(state)
+            next_state.append((nextx == cx and nexty == cy) or state[i + 1])
+           #if nextx == cx and nexty
         # you will need to replace the None part of the following tuple.
-        return ((nextx, nexty), None)
+        return tuple(next_state)
 
     def getCostOfActionSequence(self, actions):
         """
@@ -402,7 +413,15 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    unvisited = []
+    for i in range(4):
+        if not state[i + 1]:
+            unvisited.append(corners[i])
+    print(unvisited)
+    nearest_corner = max(unvisited, key=lambda s: util.manhattanDistance(state[0], s), default=state[0])
+
+    # return state[1:].count(False) # Default to trivial solution
+    return util.manhattanDistance(state[0], nearest_corner)
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -518,7 +537,11 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    if 'tot_food' not in problem.heuristicInfo.keys():
+        problem.heuristicInfo['tot_food'] = max(len(foodGrid.asList()), 1)
+    nearest = max(foodGrid.asList(), key=lambda s: util.manhattanDistance(position, s), default=position)
+
+    return util.manhattanDistance(position, nearest) * len(foodGrid.asList()) / problem.heuristicInfo['tot_food']
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -550,7 +573,7 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        return aStarSearch(problem, heuristic=manhattanHeuristic)
+        return aStarSearch(problem, heuristic=manhHeuristic)
         util.raiseNotDefined()
 
 class AnyFoodSearchProblem(PositionSearchProblem):
