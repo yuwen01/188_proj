@@ -151,7 +151,26 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        totalAgents = gameState.getNumAgents()
+        totalActions = totalAgents * self.depth
+        ''' returns a tuple of (action, reward) where state is the next state and action is the action taken to get there.
+            oh yea and reward is the valuation at that location
+        '''
+        def helper(gameState, actionsLeft, agent): 
+            if gameState.isLose() or gameState.isWin():
+                return (None, self.evaluationFunction(gameState))
+            if actionsLeft: # not at the bottom of the tree yet.
+                nextStates = [(gameState.getNextState(agent, a), a) for a in gameState.getLegalActions(agent)]
+                nextHelpers = [(s[1], helper(s[0], actionsLeft - 1, (agent + 1) % totalAgents)[1]) for s in nextStates]
+                if agent: # a ghost
+                    return min(nextHelpers, key=lambda x: x[1], default=gameState.getLegalActions(agent)[0])
+                else: # pacman's playing 
+                    return max(nextHelpers, key=lambda x: x[1], default=gameState.getLegalActions(agent)[0])
+            else: # the bottom of the tree
+                return (None, self.evaluationFunction(gameState))
+            
+        return helper(gameState, totalActions, 0)[0]
+
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
