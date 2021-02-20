@@ -200,7 +200,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                     nextHelper = (a, helper(
                         nextState, actionsLeft - 1, (agent + 1) % totalAgents, alpha, beta)[1])
                     if agent: # a ghost
-                        #print(best, "\n", nextHelper)
                         best = min(best, nextHelper, key=selector)
                         if best[1] < alpha[1]:
                             return best
@@ -212,7 +211,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                         alpha = max(alpha, best, key=selector)
                 return best
             else:  # the bottom of the tree
-                #print('bottom')
                 return (None, self.evaluationFunction(gameState))
 
         return helper(gameState, totalActions, 0, (None, float('-inf')), (None, float('inf')))[0]
