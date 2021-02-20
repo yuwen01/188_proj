@@ -186,11 +186,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         ''' returns a tuple of (action, reward) where state is the next state and action is the action taken to get there.
             oh yea and reward is the valuation at that location
         '''
-        alpha = (None, float('-inf'))
-        beta = (None, float('inf'))
-        def helper(gameState, actionsLeft, agent):
-            nonlocal alpha
-            nonlocal beta
+        def helper(gameState, actionsLeft, agent, alpha, beta):
             if gameState.isLose() or gameState.isWin():
                 #print('w/l')
                 return (None, self.evaluationFunction(gameState))
@@ -202,7 +198,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 for a in gameState.getLegalActions(agent):
                     nextState = gameState.getNextState(agent, a)
                     nextHelper = (a, helper(
-                        nextState, actionsLeft - 1, (agent + 1) % totalAgents)[1])
+                        nextState, actionsLeft - 1, (agent + 1) % totalAgents, alpha, beta)[1])
                     if agent: # a ghost
                         #print(best, "\n", nextHelper)
                         best = min(best, nextHelper, key=selector)
@@ -219,7 +215,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 #print('bottom')
                 return (None, self.evaluationFunction(gameState))
 
-        return helper(gameState, totalActions, 0)[0]
+        return helper(gameState, totalActions, 0, (None, float('-inf')), (None, float('inf')))[0]
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
