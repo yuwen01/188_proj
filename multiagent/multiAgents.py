@@ -206,16 +206,14 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                     if agent: # a ghost
                         #print(best, "\n", nextHelper)
                         best = min(best, nextHelper, key=selector)
-                        if best[1] > beta[1]:
-                            #print('ghost pruned')
-                            return beta #(a, beta[1])
-                        alpha = max(alpha, best, key=selector)
+                        if best[1] < alpha[1]:
+                            return best
+                        beta = min(beta, best, key=selector)
                     else: # pacman   
                         best = max(best, nextHelper, key=selector)
-                        if best[1] < alpha[1]:
-                            #print('pac pruned')
-                            return alpha #(a, alpha[1])
-                        beta = max(beta, best, key=selector)
+                        if best[1] > beta[1]:
+                            return best
+                        alpha = max(alpha, best, key=selector)
                 return best
             else:  # the bottom of the tree
                 #print('bottom')
