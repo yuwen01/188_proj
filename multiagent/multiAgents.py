@@ -228,6 +228,33 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
+        totalAgents = gameState.getNumAgents()
+        totalActions = totalAgents * self.depth
+        ''' returns a tuple of (action, reward) where state is the next state and action is the action taken to get there.
+            oh yea and reward is the valuation at that location
+        '''
+        def helper(gameState, actionsLeft, agent):
+            if gameState.isLose() or gameState.isWin():
+                #print('w/l')
+                return (None, self.evaluationFunction(gameState))
+            if actionsLeft:  # not at the bottom of the tree yet.
+                best = (None, 0)
+                def selector(x): return x[1]
+                if not agent:  # pacman
+                    best = (None, float("-inf"))
+                for a in gameState.getLegalActions(agent):
+                    nextState = gameState.getNextState(agent, a)
+                    nextHelper = (a, helper(
+                        nextState, actionsLeft - 1, (agent + 1) % totalAgents)[1])
+                    if agent:  # a ghost
+                        best = (a, nextHelper[1] / len(gameState.getLegalActions(agent)) + best[1])
+                    else:  # pacman
+                        best = max(best, nextHelper, key=selector)
+                return best
+            else:  # the bottom of the tree
+                return (None, self.evaluationFunction(gameState))
+
+        return helper(gameState, totalActions, 0)[0]
         util.raiseNotDefined()
 
 def betterEvaluationFunction(currentGameState):
