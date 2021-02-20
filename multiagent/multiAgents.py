@@ -181,8 +181,47 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         Returns the minimax action using self.depth and self.evaluationFunction
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        totalAgents = gameState.getNumAgents()
+        totalActions = totalAgents * self.depth
+        ''' returns a tuple of (action, reward) where state is the next state and action is the action taken to get there.
+            oh yea and reward is the valuation at that location
+        '''
+        alpha = (None, float('-inf'))
+        beta = (None, float('inf'))
+        def helper(gameState, actionsLeft, agent):
+            nonlocal alpha
+            nonlocal beta
+            if gameState.isLose() or gameState.isWin():
+                #print('w/l')
+                return (None, self.evaluationFunction(gameState))
+            if actionsLeft:  # not at the bottom of the tree yet.
+                best = (None, float("inf"))
+                selector = lambda x: x[1]
+                if not agent: # pacman
+                    best = (None, float("-inf"))
+                for a in gameState.getLegalActions(agent):
+                    nextState = gameState.getNextState(agent, a)
+                    nextHelper = (a, helper(
+                        nextState, actionsLeft - 1, (agent + 1) % totalAgents)[1])
+                    if agent: # a ghost
+                        #print(best, "\n", nextHelper)
+                        best = min(best, nextHelper, key=selector)
+                        if best[1] > beta[1]:
+                            #print('ghost pruned')
+                            return beta #(a, beta[1])
+                        alpha = max(alpha, best, key=selector)
+                    else: # pacman   
+                        best = max(best, nextHelper, key=selector)
+                        if best[1] < alpha[1]:
+                            #print('pac pruned')
+                            return alpha #(a, alpha[1])
+                        beta = max(beta, best, key=selector)
+                return best
+            else:  # the bottom of the tree
+                #print('bottom')
+                return (None, self.evaluationFunction(gameState))
+
+        return helper(gameState, totalActions, 0)[0]
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
