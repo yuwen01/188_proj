@@ -337,7 +337,15 @@ def pacphysics_axioms(t, all_coords, non_outer_wall_coords):
         - Pacman takes exactly one action at timestep t.
     """
     pacphysics_sentences = []
-
+    loc_str = pacman_str
+    for x, y in all_coords:
+        pac_loc = PropSymbolExpr(pacman_str, x, y, t)
+        wall_loc = PropSymbolExpr(wall_str, x, y)
+        pacphysics_sentences.append(wall_loc >> ~pac_loc)
+    
+    pacphysics_sentences.append(exactlyOne([PropSymbolExpr(pacman_str, x, y, t) for x, y in non_outer_wall_coords]))
+    pacphysics_sentences.append(exactlyOne([PropSymbolExpr(action, t) for action in DIRECTIONS]))
+    return conjoin(pacphysics_sentences)
     "*** BEGIN YOUR CODE HERE ***"
     raise NotImplementedError
     "*** END YOUR CODE HERE ***"
@@ -369,6 +377,13 @@ def check_location_satisfiability(x1_y1, x0_y0, action0, action1, problem):
     KB.append(conjoin(map_sent))
 
     "*** BEGIN YOUR CODE HERE ***"
+    KB.append(PropSymbolExpr(pacman_str, x0, y0, 0))
+    KB.append(pacphysics_axioms(0, all_coords, non_outer_wall_coords))
+    KB.append(PropSymbolExpr(action0, 0))
+    KB.append(allLegalSuccessorAxioms(1, walls_grid, non_outer_wall_coords))
+    KB.append(pacphysics_axioms(1, all_coords, non_outer_wall_coords))
+    KB.append(PropSymbolExpr(action1, 1))
+    return findModel(conjoin(KB) & PropSymbolExpr(pacman_str, x1, y1, 1)), findModel(conjoin(KB) & ~PropSymbolExpr(pacman_str, x1, y1, 1))
     raise NotImplementedError
     "*** END YOUR CODE HERE ***"
 

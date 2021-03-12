@@ -533,7 +533,7 @@ def conjoin(exprs, *args):
 
     # It is a list. Enforce everything in the list is an Expr
     for expr in exprs:
-        assert isinstance(expr, Expr), "An item in list to conjoin is not an Expr."
+        assert isinstance(expr, Expr), f"An item in list to conjoin is not an Expr {expr}."
 
     if (len(exprs) == 1):
         return exprs[0]
