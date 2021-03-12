@@ -194,6 +194,7 @@ def atLeastOne(literals):
     True
     """
     "*** BEGIN YOUR CODE HERE ***"
+    return disjoin(literals)
     raise NotImplementedError
     "*** END YOUR CODE HERE ***"
 
@@ -205,6 +206,15 @@ def atMostOne(literals):
     the expressions in the list is true.
     """
     "*** BEGIN YOUR CODE HERE ***"
+    # all false, or exactly one true.
+    lits = literals
+    lst = []
+    lits_len = len(literals)
+    for i in range(lits_len):
+        for j in range(i + 1, lits_len):
+            lst.append(disjoin(~lits[i], ~lits[j]))
+    return conjoin(lst)
+
     raise NotImplementedError
     "*** END YOUR CODE HERE ***"
 
@@ -216,6 +226,7 @@ def exactlyOne(literals):
     the expressions in the list is true.
     """
     "*** BEGIN YOUR CODE HERE ***"
+    return atMostOne(literals) & disjoin(literals)
     raise NotImplementedError
     "*** END YOUR CODE HERE ***"
 
