@@ -383,7 +383,7 @@ def check_location_satisfiability(x1_y1, x0_y0, action0, action1, problem):
     KB.append(allLegalSuccessorAxioms(1, walls_grid, non_outer_wall_coords))
     KB.append(pacphysics_axioms(1, all_coords, non_outer_wall_coords))
     KB.append(PropSymbolExpr(action1, 1))
-    return findModel(conjoin(KB) & PropSymbolExpr(pacman_str, x1, y1, 1)), findModel(conjoin(KB) & ~PropSymbolExpr(pacman_str, x1, y1, 1))
+    return findModel(conjoin(KB) & ~PropSymbolExpr(pacman_str, x1, y1, 1)), findModel(conjoin(KB) & PropSymbolExpr(pacman_str, x1, y1, 1))
     raise NotImplementedError
     "*** END YOUR CODE HERE ***"
 
