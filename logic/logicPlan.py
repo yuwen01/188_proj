@@ -261,6 +261,7 @@ def pacmanSuccessorStateAxioms(x, y, t, walls_grid, var_str=pacman_str):
     Available actions are ['North', 'East', 'South', 'West']
     Note that STOP is not an available action.
     """
+    #print('walls grid official', type(walls_grid))
     possibilities = []
     if not walls_grid[x][y+1]:
         possibilities.append( PropSymbolExpr(var_str, x, y+1, t-1)
@@ -347,10 +348,7 @@ def pacphysics_axioms(t, all_coords, non_outer_wall_coords):
     pacphysics_sentences.append(exactlyOne([PropSymbolExpr(action, t) for action in DIRECTIONS]))
     return conjoin(pacphysics_sentences)
     "*** BEGIN YOUR CODE HERE ***"
-    raise NotImplementedError
     "*** END YOUR CODE HERE ***"
-
-    return conjoin(pacphysics_sentences)
 
 
 def check_location_satisfiability(x1_y1, x0_y0, action0, action1, problem):
@@ -375,7 +373,7 @@ def check_location_satisfiability(x1_y1, x0_y0, action0, action1, problem):
     # We know which coords are walls:
     map_sent = [PropSymbolExpr(wall_str, x, y) for x, y in walls_list]
     KB.append(conjoin(map_sent))
-
+    
     "*** BEGIN YOUR CODE HERE ***"
     KB.append(PropSymbolExpr(pacman_str, x0, y0, 0))
     KB.append(pacphysics_axioms(0, all_coords, non_outer_wall_coords))
@@ -407,7 +405,22 @@ def positionLogicPlan(problem):
     actions = [ 'North', 'South', 'East', 'West' ]
     KB = []
 
+    # print('walls', type(walls))
+    # print('walls_list', type(walls_list))
+
     "*** BEGIN YOUR CODE HERE ***"
+    KB.append(PropSymbolExpr(pacman_str, x0, y0, 0))
+    for t in range(0, 50):
+        KB.append(exactlyOne([PropSymbolExpr(pacman_str, x, y, t) for x, y in non_wall_coords]))
+        KB_conjoined = conjoin(KB) & PropSymbolExpr(pacman_str, xg, yg, t)
+        mod = findModel(KB_conjoined)
+        if mod:
+            return extractActionSequence(mod, actions)
+        KB.append(exactlyOne([PropSymbolExpr(a, t) for a in actions]))
+        KB.append(conjoin([pacmanSuccessorStateAxioms(x, y, t + 1, walls) for x, y in non_wall_coords]))
+
+
+    return []
     raise NotImplementedError
     "*** END YOUR CODE HERE ***"
 
