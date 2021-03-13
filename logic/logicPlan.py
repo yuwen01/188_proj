@@ -443,12 +443,41 @@ def foodLogicPlan(problem):
 
     #locations = list(filter(lambda loc : loc not in walls_list, all_coords))
     non_wall_coords = [loc for loc in all_coords if loc not in walls_list]
+    non_food_coords = [loc for loc in all_coords if loc not in food]
     actions = [ 'North', 'South', 'East', 'West' ]
 
     KB = []
 
+    print(food[0])
     "*** BEGIN YOUR CODE HERE ***"
-    raise NotImplementedError
+    KB.append(PropSymbolExpr(pacman_str, x0, y0, 0))
+    KB.append(conjoin([PropSymbolExpr(food_str, x, y, 0) for x, y in food]))
+    #KB.append(conjoin([~PropSymbolExpr(food_str, x, y, 0) for x, y in non_food_coords]))
+
+    for t in range(0, 50):
+        KB.append(exactlyOne([PropSymbolExpr(pacman_str, x, y, t) for x, y in non_wall_coords]))
+
+        goal_state = conjoin([~PropSymbolExpr(food_str, x, y, t) for x, y in food])
+        KB_conjoined = conjoin(KB) & goal_state
+        mod = findModel(KB_conjoined)
+        if mod:
+            return extractActionSequence(mod, actions)
+        KB.append(exactlyOne([PropSymbolExpr(a, t) for a in actions]))
+        KB.append(conjoin([pacmanSuccessorStateAxioms(x, y, t + 1, walls) for x, y in non_wall_coords]))
+        food_succs = []
+        for x, y in food:
+            food_next = PropSymbolExpr(food_str, x, y, t + 1)
+            food_now = PropSymbolExpr(food_str, x, y, t)
+            at_next = PropSymbolExpr(pacman_str, x, y, t + 1)
+            food_succs.append(food_next | ~food_now | at_next)
+            food_succs.append(~food_next | food_now)
+            food_succs.append(~food_next | ~at_next)
+    
+        KB.append(conjoin(food_succs))
+        
+
+
+    return []
     "*** END YOUR CODE HERE ***"
 
 
