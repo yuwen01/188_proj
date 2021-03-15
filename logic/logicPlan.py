@@ -618,7 +618,16 @@ def localization(problem, agent):
     KB = []
 
     "*** BEGIN YOUR CODE HERE ***"
-    raise NotImplementedError
+    for x, y in all_coords:
+        if (x, y) in walls_list:
+            KB.append(PropSymbolExpr(wall_str, x, y))
+        else:
+            KB.append(~PropSymbolExpr(wall_str, x, y))
+    for t in range(agent.num_timesteps):
+        addEnvInfo(KB, agent, t, all_coords, non_outer_wall_coords)
+        getPossibleLocs(KB, t, non_outer_wall_coords, possible_locs_by_timestep)
+        agent.moveToNextState(agent.actions[t])
+        KB.append(allLegalSuccessorAxioms(t + 1, walls_grid, non_outer_wall_coords))
     "*** END YOUR CODE HERE ***"
     return possible_locs_by_timestep
 
@@ -649,7 +658,17 @@ def mapping(problem, agent):
     KB.append(conjoin(outer_wall_sent))
 
     "*** BEGIN YOUR CODE HERE ***"
-    raise NotImplementedError
+    KB.append(PropSymbolExpr(pacman_str, pac_x_0, pac_y_0, 0))
+    for t in range(agent.num_timesteps):
+        addEnvInfo(KB, agent, t, all_coords, non_outer_wall_coords)
+        getWallLocs(KB, t, non_outer_wall_coords, known_map, known_map_by_timestep)
+        agent.moveToNextState(agent.actions[t])
+        walls = []
+        for x in range(problem.getWidth()+2):
+            walls.append([])
+            for y in range(problem.getHeight()+2):
+                walls[x].append(known_map_by_timestep[t][x][y] == 1)
+        KB.append(allLegalSuccessorAxioms(t + 1, known_map, non_outer_wall_coords))
     "*** END YOUR CODE HERE ***"
     return known_map_by_timestep
 
@@ -684,6 +703,48 @@ def slam(problem, agent):
     raise NotImplementedError
     "*** END YOUR CODE HERE ***"
     return known_map_by_timestep, possible_locs_by_timestep
+
+def addEnvInfo(KB, agent, t, all_coords, non_outer_wall_coords, flag=''):
+    KB.append(pacphysics_axioms(t, all_coords, non_outer_wall_coords))
+    KB.append(PropSymbolExpr(agent.actions[t], t))
+    if flag == 'SLAM':
+        KB.append(SLAMSensorAxioms(t, non_outer_wall_coords))
+        KB.append(num_adj_walls_percept_rules(t, agent.getPercepts()))
+    else:
+        KB.append(sensorAxioms(t, non_outer_wall_coords))
+        KB.append(four_bit_percept_rules(t, agent.getPercepts()))
+
+def getPossibleLocs(KB, t, non_outer_wall_coords, possible_locs_by_timestep):
+    possible_locations_t = []
+    for x, y in non_outer_wall_coords:
+        m1 = findModel(conjoin(KB) & PropSymbolExpr(pacman_str, x, y, t)) # If we don't find model for this, that means we are provably not at x, y, t.
+        m2 = findModel(conjoin(KB) & ~PropSymbolExpr(pacman_str, x, y, t)) # If we don't find model for this, that means we are provably at x, y, t.
+        # if m1:
+        #     possible_locations_t.append((x, y))
+        #     if not m2:
+        #         KB.append(PropSymbolExpr(pacman_str, x, y, t))
+        # elif not m1 and m2:
+        #     KB.append(~PropSymbolExpr(pacman_str, x, y, t))
+        if m1: 
+            possible_locations_t.append((x, y))
+        
+        if not m1:
+            KB.append(~PropSymbolExpr(pacman_str, x, y, t))
+        elif not m2:
+            KB.append(PropSymbolExpr(pacman_str, x, y, t))
+    possible_locs_by_timestep.append(possible_locations_t)
+
+def getWallLocs(KB, t, non_outer_wall_coords, known_map, known_map_by_timestep):
+    for x, y in non_outer_wall_coords:
+        m1 = findModel(conjoin(KB) & PropSymbolExpr(wall_str, x, y)) # If we don't find model for this, that means there is provably no wall at x, y.
+        m2 = findModel(conjoin(KB) & ~PropSymbolExpr(wall_str, x, y)) # If we don't find model for this, that means there is provably a wall at x, y.   
+        if not m1:
+            KB.append(~PropSymbolExpr(wall_str, x, y))
+            known_map[x][y] = 0
+        elif not m2:
+            KB.append(PropSymbolExpr(wall_str, x, y, t))
+            known_map[x][y] = 1
+    known_map_by_timestep.append(copy.deepcopy(known_map))
 
 # Abbreviations
 plp = positionLogicPlan
