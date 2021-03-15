@@ -700,7 +700,18 @@ def slam(problem, agent):
     KB.append(conjoin(outer_wall_sent))
 
     "*** BEGIN YOUR CODE HERE ***"
-    raise NotImplementedError
+    KB.append(PropSymbolExpr(pacman_str, pac_x_0, pac_y_0, 0))
+    for t in range(agent.num_timesteps):
+        addEnvInfo(KB, agent, t, all_coords, non_outer_wall_coords, 'SLAM')
+        getWallLocs(KB, t, non_outer_wall_coords, known_map, known_map_by_timestep)
+        getPossibleLocs(KB, t, non_outer_wall_coords, possible_locs_by_timestep)
+        agent.moveToNextState(agent.actions[t])
+        walls = []
+        for x in range(problem.getWidth()+2):
+            walls.append([])
+            for y in range(problem.getHeight()+2):
+                walls[x].append(known_map[x][y] == 1)
+        KB.append(SLAMSuccessorAxioms(t + 1, walls, non_outer_wall_coords))
     "*** END YOUR CODE HERE ***"
     return known_map_by_timestep, possible_locs_by_timestep
 
