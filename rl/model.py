@@ -12,6 +12,13 @@ class DeepQNetwork():
         # Remember to set self.learning_rate, self.numTrainingGames,
         # self.parameters, and self.batch_size!
         "*** YOUR CODE HERE ***"
+        h1 = 300
+        h2 = 300
+        self.set_weights([nn.Parameter(state_dim, h1), nn.Parameter(1, h1), nn.Parameter(h1, h2), 
+            nn.Parameter(1, h2), nn.Parameter(h2, action_dim), nn.Parameter(1, action_dim)])
+        self.learning_rate = -1
+        self.numTrainingGames = 3000
+        self.batch_size = 300
 
     def set_weights(self, layers):
         self.parameters = []
@@ -29,6 +36,7 @@ class DeepQNetwork():
             loss node between Q predictions and Q_target
         """
         "*** YOUR CODE HERE ***"
+        return nn.SquareLoss(self.run(states), Q_target)
 
     def run(self, states):
         """
@@ -44,6 +52,16 @@ class DeepQNetwork():
                 scores, for each of the actions
         """
         "*** YOUR CODE HERE ***"
+        w1 = self.parameters[0]
+        b1 = self.parameters[1]
+        w2 = self.parameters[2]
+        b2 = self.parameters[3]
+        w3 = self.parameters[4]
+        b3 = self.parameters[5]
+
+        first = nn.ReLU(nn.AddBias(nn.Linear(states, w1), b1))
+        second = nn.ReLU(nn.AddBias(nn.Linear(first, w2), b2))
+        return nn.AddBias(nn.Linear(second, w3), b3)
 
     def gradient_update(self, states, Q_target):
         """
@@ -55,3 +73,6 @@ class DeepQNetwork():
             None
         """
         "*** YOUR CODE HERE ***"
+        my_gradients = nn.gradients(self.get_loss(states, Q_target), self.parameters)
+        for i in range(len(self.parameters)):
+            self.parameters[i].update(my_gradients[i], self.learning_rate)
